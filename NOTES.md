@@ -30,8 +30,8 @@
 1. 今天做的事：今天主要完成了选型的更换，采用TanStack start和Cloudflare替换nextjs技术栈，然后逐渐部署上线项目。登录，上线，连接github自动更新。
 
 1. 「Next.js 的 Server/Client 组件」和「TanStack Start 的同构组件」有什么区别？为什么 TanStack Start 不用写 `'use client'`
-   TanStack Start是属于服务端和客户端同构，要自己管理渲染，如果在客户端渲染交互可能会出错。
+   TanStack Start是属于服务端和客户端同构，同样的代码会在服务器渲染一遍html,再将html交给客户端,客户端通过注水实现交互。
    
-2. 新建一个页面要做什么？（文件放哪儿、里面必须写哪几样东西、网址写在什么地方）x新建页面要在src/routes内新建tsx文件,里面需要导入模板,然后定义好页面的名字,渲染使用的组件,然后在下方写出组件的实现。网址写在createFileRoute('')内。
+2. 新建一个页面要做什么？（文件放哪儿、里面必须写哪几样东西、网址写在什么地方）x新建页面要在src/routes内新建tsx文件,里面需要导入工具,然后定义好页面的名字,渲染使用的组件,然后在下方写出组件函数。网址写在createFileRoute('')内。
 3. `npm run deploy` 内部做了哪两件事？连上 Git 之后，`git push` 和「网站更新」是什么关系？ 先进行构建npm run build然后再部署到Cloudflare上。连上git后，push到github上网站会自动监测更新。
-4. 遇到的问题 / 还没完全懂的：问题主要是，使用到比较多命令行，尤其是刚开始拉取项目的时候，然后还有后续部署。这部分记忆还不够牢固。以及登录的w开头的平台，和Cloudflare是什么关系，有什么用。
+4. 遇到的问题 / 还没完全懂的：
