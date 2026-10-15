@@ -8,6 +8,13 @@
       "when": 1791967908321,
       "tag": "0000_warm_patriot",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1791992234487,
+      "tag": "0001_talented_shiver_man",
+      "breakpoints": true
     }
   ]
 }

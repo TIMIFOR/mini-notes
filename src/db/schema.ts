@@ -8,6 +8,7 @@ export const notes = sqliteTable('notes', {
   userId: text('user_id').notNull(),
   title: text('title').notNull(),
   content: text('content').notNull(),
+  pinned: integer('pinned', { mode: 'boolean' }).notNull().default(false),
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),
