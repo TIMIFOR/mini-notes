@@ -1,30 +1,35 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import { env } from 'cloudflare:workers'      // ⭐ 仓库钥匙串
 import { getRequestHeaders } from '@tanstack/react-start/server'  // 本次请求的 headers（内含 cookie）
-import { auth } from '#/auth/auth'            // 服务端 Better Auth 实例（权威）
-import { drizzle } from 'drizzle-orm/d1'      // ⭐ D1 版的翻译官
-import { notes } from '#/db/schema'           // ⭐ 我们画的图纸
+import { eq } from 'drizzle-orm'                                  // 生成 SQL 的 WHERE
+import { auth } from '#/auth/auth'                                // 服务端 Better Auth（权威）
+import { getDb } from '#/db'                                      // 3.4 合并好的 Drizzle 实例（带 schema）
+import { notes } from '#/db/schema'                               // 图纸
 
-// 只在服务器执行的函数：去数据库取全部笔记
-const getNotes = createServerFn({ method: 'GET' }).handler(async () => {
-  const db = drizzle(env.DB)
-  return db.select().from(notes).all()
-})
-
-// 只在服务器执行：把浏览器带来的 cookie 交给 Better Auth，问「这是谁？」
+// 只在服务器执行：把 cookie 交给 Better Auth，问「这是谁？」
 const getSession = createServerFn({ method: 'GET' }).handler(async () =>
   auth.api.getSession({ headers: getRequestHeaders() }),
 )
 
+// 只在服务器执行：只取「当前登录用户」的笔记
+const getNotes = createServerFn({ method: 'GET' }).handler(async () => {
+  const session = await auth.api.getSession({ headers: getRequestHeaders() })
+  if (!session) throw redirect({ to: '/login' })   // 双保险（beforeLoad 已挡一次）
+
+  return getDb()
+    .select()
+    .from(notes)
+    .where(eq(notes.userId, session.user.id))      // ← 关键：每条查询都带 user_id
+    .all()
+})
+
 export const Route = createFileRoute('/notes')({
-  // beforeLoad 跑在 loader 之前；SSR 时它在服务器上执行 → 未登录当场改道
   beforeLoad: async () => {
     const session = await getSession()
     if (!session) throw redirect({ to: '/login' })
-    return { session }        // 塞进路由 context，3.9 要用它取真实 user id
+    return { session }
   },
-  loader: () => getNotes(),   // 渲染前先把数据备好
+  loader: () => getNotes(),
   component: NotesPage,
 })
 
