@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import ThemeToggle from './ThemeToggle'
+import UserMenu from './UserMenu'
 
 export default function Header() {
   return (
@@ -70,6 +71,7 @@ export default function Header() {
             </svg>
           </a>
 
+          <UserMenu />
           <ThemeToggle />
         </div>
       </nav>
