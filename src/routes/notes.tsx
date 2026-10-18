@@ -1,6 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { env } from 'cloudflare:workers'      // ⭐ 仓库钥匙串
+import { getRequestHeaders } from '@tanstack/react-start/server'  // 本次请求的 headers（内含 cookie）
+import { auth } from '#/auth/auth'            // 服务端 Better Auth 实例（权威）
 import { drizzle } from 'drizzle-orm/d1'      // ⭐ D1 版的翻译官
 import { notes } from '#/db/schema'           // ⭐ 我们画的图纸
 
@@ -10,13 +12,24 @@ const getNotes = createServerFn({ method: 'GET' }).handler(async () => {
   return db.select().from(notes).all()
 })
 
+// 只在服务器执行：把浏览器带来的 cookie 交给 Better Auth，问「这是谁？」
+const getSession = createServerFn({ method: 'GET' }).handler(async () =>
+  auth.api.getSession({ headers: getRequestHeaders() }),
+)
+
 export const Route = createFileRoute('/notes')({
-  loader: () => getNotes(),                   // 渲染前先把数据备好
+  // beforeLoad 跑在 loader 之前；SSR 时它在服务器上执行 → 未登录当场改道
+  beforeLoad: async () => {
+    const session = await getSession()
+    if (!session) throw redirect({ to: '/login' })
+    return { session }        // 塞进路由 context，3.9 要用它取真实 user id
+  },
+  loader: () => getNotes(),   // 渲染前先把数据备好
   component: NotesPage,
 })
 
 function NotesPage() {
-  const rows = Route.useLoaderData()          // 取 loader 拿到的数据
+  const rows = Route.useLoaderData()
 
   return (
     <main className="p-8">
