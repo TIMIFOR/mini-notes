@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
+import { createFileRoute, redirect, useRouter, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { getRequestHeaders } from '@tanstack/react-start/server' // 本次请求的 headers（内含 cookie）
 import { and, eq } from 'drizzle-orm'                            // eq / and → SQL 的 WHERE / AND
@@ -126,6 +126,13 @@ function NotesPage() {
             <p className="mt-2 text-sm text-gray-400">
               {note.userId} · {note.createdAt.toLocaleString('zh-CN')}
             </p>
+            <Link
+              to="/notes/$id/edit"
+              params={{ id: note.id }}
+              className="mt-3 mr-2 inline-block rounded border border-blue-300 px-2 py-1 text-sm text-blue-600"
+            >
+              编辑
+            </Link>
             <button
               type="button"
               onClick={() => onDelete(note.id)}

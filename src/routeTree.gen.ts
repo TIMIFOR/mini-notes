@@ -16,6 +16,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as NotesRouteImport } from './routes/notes'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as NotesIdEditRouteImport } from './routes/notes_.$id.edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,6 +53,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NotesIdEditRoute = NotesIdEditRouteImport.update({
+  id: '/notes_/$id/edit',
+  path: '/notes/$id/edit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/notes': typeof NotesRoute
   '/signup': typeof SignupRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/notes/$id/edit': typeof NotesIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/notes': typeof NotesRoute
   '/signup': typeof SignupRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/notes/$id/edit': typeof NotesIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/notes': typeof NotesRoute
   '/signup': typeof SignupRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/notes_/$id/edit': typeof NotesIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/notes'
     | '/signup'
     | '/api/auth/$'
+    | '/notes/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/notes'
     | '/signup'
     | '/api/auth/$'
+    | '/notes/$id/edit'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/notes'
     | '/signup'
     | '/api/auth/$'
+    | '/notes_/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +131,7 @@ export interface RootRouteChildren {
   NotesRoute: typeof NotesRoute
   SignupRoute: typeof SignupRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  NotesIdEditRoute: typeof NotesIdEditRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/notes_/$id/edit': {
+      id: '/notes_/$id/edit'
+      path: '/notes/$id/edit'
+      fullPath: '/notes/$id/edit'
+      preLoaderRoute: typeof NotesIdEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   NotesRoute: NotesRoute,
   SignupRoute: SignupRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  NotesIdEditRoute: NotesIdEditRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
