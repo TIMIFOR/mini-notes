@@ -57,3 +57,15 @@
    - "注入" = 外部把值送进运行环境；env 是每个请求由运行时递过来的
 
 
+
+## Level 3 · 认证（Better Auth）
+
+1. 今天做的事：一条时间线：装 better-auth → 生成四张表图纸 → 迁移建表 → 挂 /api/auth 路由 → 注册登录页 → 导航栏显示用户+登出 → 保护 /notes → 查询按 user_id 隔离 → 线上收尾。
+
+2. `src/auth/auth.ts` 的 `auth` 和 `src/auth/client.ts` 的 `authClient` 分别是什么、谁在跑、谁能碰数据库：`auth` 是服务端对象（持有 secret 和 adapter，只在 Worker 里跑，唯一能碰数据库）；`authClient` 是浏览器端对象，没有密钥也没有写库能力，只向服务端发 HTTP 请求，由服务端来查数据库。
+
+3. 一次「注册」在服务器上到底发生了什么（从点按钮开始：发什么请求 → 服务端写哪几张表 → 怎么让你"登录"起来）：点注册后 `authClient.signUp.email` 发 `POST /api/auth/sign-up/email`，经 `src/routes/api/auth/$.ts` 交给 `auth.handler`，然后写三张表：`user`（账号）、`account`（登录方式和凭据，含密码哈希、`providerId='credential'`）、`session`（token + 过期时间）。服务端用 `Set-Cookie` 下发 `better-auth.session_token`（HttpOnly，JS 读不到），浏览器自动保存，之后每次请求自动带上，服务端查 session 表就知道是谁。
+
+4. 四张认证表各存什么；密码为什么不存明文；cookie 的 HttpOnly / Secure / SameSite 各防什么：`user` 存账号；`account` 存登录方式和凭据；`session` 存当前有效的一次登录的凭证记录 = `token` + `userId` + `expiresAt` + `ipAddress` + `userAgent`；`verification` 存一次性令牌（本项目没开邮箱验证，所以是空表）。cookie 的 HttpOnly 防 XSS、Secure 只在 HTTPS 发送、SameSite 防 CSRF。密码不存明文：服务端有泄密风险（数据库被拖走），哈希单向不可逆，反推不出原密码，而且每行随机盐 + scrypt 慢，暴力枚举不划算。
+
+5. 我遇到的问题 / 还没完全懂的：本节知识细节很多，只能勉强记住框架，所以我想先知道全貌、再回头深入。另外是目录结构：`src/auth` 是认证层（`auth.ts` 服务端 / `client.ts` 浏览器端），`src/db` 是数据层（`schema.ts` 手写图纸 / `auth.schema.ts` 生成图纸 / `index.ts` 的 `getDb()`），`src/routes/api/auth/$.ts` 是**路由**而不是独立的后端服务——前后端在同一个 Worker 里，只是 `server.handlers` 里的函数只在服务端跑、返回 JSON。
